@@ -1,0 +1,23 @@
+
+sql-dbconntype =QMYSQL         #
+sql-hostname   =101.34.12.202 #
+sql-port       =3306          #
+sql-dbname     =skgnss        #
+sql-username   =1121910079    #
+sql-password   =1121910079    #
+
+sql-net        =TEST          #
+sql-base       =KORO          #
+sql-rover      =NANO          #
+
+sql-tableformat=%m%d%h%M      #
+sql-swapIntv   =24            #
+sql-swapTime   =0             #
+sql-heart      =3600          #
+
+rover-lat      =36.00081319         #
+rover-lon      =120.12286323        #
+rover-height   =50.916              #
+rover-ecefx    =-2592581.156         #
+rover-ecefy    =4468326.749        #
+rover-ecefz    =3728294.602         #
