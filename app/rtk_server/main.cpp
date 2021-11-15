@@ -1,3 +1,22 @@
+/*
+ * 基于RTKlib 2.4.3 b.34 Navi\rtkrcv模块的实时RTK解算程序
+ * 可以理解为navi去掉了图形化模块，并可以将解算结果输出至数据库
+ * 参考了navi（win）和rtkrcv（linux）的代码，利用qt跨平台的特性实现一份代码多平台运行。
+ * 暂时没有对rtklib的源码部分进行修改，通过调用rtklib库的方式实现当前的功能
+ *
+ * 当前实现功能：
+ * 基于RTKnavi内核（rtksvrstart()函数）的RTK解算
+ * 通过调用计时器来读取rtk解算的结果并写入MySQL数据库（固定的表结构）
+ * 通过读取conf文件和dbopt文件来设置解算参数和写入数据库的设置
+ *
+ * 后续功能完善：
+ *
+ *
+ *
+*/
+
+
+
 #include <QCoreApplication>
 #include "navimain.h"
 
