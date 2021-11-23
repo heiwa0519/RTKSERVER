@@ -319,7 +319,7 @@ static int model_phw(gtime_t time, int sat, const char *type, int opt,
     *phw=ph+floor(*phw-ph+0.5); /* in cycle */
     return 1;
 }
-/* measurement error variance ------------------------------------------------*/
+/* measurement error   ------------------------------------------------*/
 static double varerr(int sat, int sys, double el, int idx, int type,
                      const prcopt_t *opt)
 {

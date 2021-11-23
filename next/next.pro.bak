@@ -1,0 +1,6 @@
+TEMPLATE = subdirs
+
+SUBDIRS= rtk_analysis \
+    rtk_funtest \
+    rtk_record \
+    rtk_tools

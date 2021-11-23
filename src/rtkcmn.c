@@ -995,7 +995,7 @@ extern double *zeros(int n, int m)
     if ((p=mat(n,m))) for (n=n*m-1;n>=0;n--) p[n]=0.0;
 #else
     if (n<=0||m<=0) return NULL;
-    if (!(p=(double *)calloc(sizeof(double),n*m))) {
+    if (!(p=(double *)calloc(sizeof(double),n*m))) {    //calloc函数除了分配连续的空间外还会默认设置为0
         fatalerr("matrix memory allocation error: n=%d,m=%d\n",n,m);
     }
 #endif
@@ -1141,12 +1141,22 @@ extern int solve(const char *tr, const double *A, const double *Y, int n,
 
 #else /* without LAPACK/BLAS or MKL */
 
-/* multiply matrix -----------------------------------------------------------*/
+/* multiply matrix -----------------------------------------------------------
+* multiply matrix by matrix (C=alpha*A*B+beta*C)
+* args   : char   *tr       I  transpose flags ("N":normal,"T":transpose)
+*          int    n,k,m     I  size of (transposed) matrix A,B
+*          double alpha     I  alpha
+*          double *A,*B     I  (transposed) matrix A (n x m), B (m x k)
+*          double beta      I  beta
+*          double *C        IO matrix C (n x k)
+* return : none
+*-----------------------------------------------------------------------------*/
+//矩阵为按列主顺序存储的矩阵，n代表第一个矩阵的行，k代表第二个矩阵的列，m代表第一个矩阵的列和第二个矩阵的行。作者之所以把n和k放在m前面，看起来顺序反逻辑，其实是矩阵相乘一共要循环n*k次，从编程的顺序来排的。
 extern void matmul(const char *tr, int n, int k, int m, double alpha,
                    const double *A, const double *B, double beta, double *C)
 {
     double d;
-    int i,j,x,f=tr[0]=='N'?(tr[1]=='N'?1:2):(tr[1]=='N'?3:4);
+    int i,j,x,f=tr[0]=='N'?(tr[1]=='N'?1:2):(tr[1]=='N'?3:4);//NN:1  NT:2 TN:3 TT:4   N表示原始矩阵，T表示转置
     
     for (i=0;i<n;i++) for (j=0;j<k;j++) {
         d=0.0;
@@ -3530,11 +3540,11 @@ extern double geodist(const double *rs, const double *rr, double *e)
     double r;
     int i;
     
-    if (norm(rs,3)<RE_WGS84) return -1.0;
+    if (norm(rs,3)<RE_WGS84) return -1.0;//卫星的几何距离小于WGS84长半轴 则卫星位置错误
     for (i=0;i<3;i++) e[i]=rs[i]-rr[i];
     r=norm(e,3);
     for (i=0;i<3;i++) e[i]/=r;
-    return r+OMGE*(rs[0]*rr[1]-rs[1]*rr[0])/CLIGHT;
+    return r+OMGE*(rs[0]*rr[1]-rs[1]*rr[0])/CLIGHT;//几何距离加上了sagnac改正
 }
 /* satellite azimuth/elevation angle -------------------------------------------
 * compute satellite azimuth/elevation angle

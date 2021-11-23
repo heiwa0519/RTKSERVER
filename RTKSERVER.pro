@@ -1,6 +1,8 @@
 TEMPLATE = subdirs
 
 SUBDIRS= src \
-         app
+         app \
+         next \
+         learn
 
 app.depends = src
