@@ -196,7 +196,13 @@ void NaviMain::init()
 
 void NaviMain::loadini()
 {
+
+#ifdef WIN32
     loadopts("G:/RTKSERVER/data/conf/CH01_CH02/option.ini",iniopts);
+#else
+    loadopts("option.ini",iniopts);
+#endif
+
 
     qDebug()<<"conf  file path:"<<ConfPath;
     qDebug()<<"dbopt file path:"<<DbOptPath;
@@ -438,7 +444,7 @@ int debug_svr(rtksvr_t svr)
 }
 
 
-int NaviMain::Navi_Init()
+int NaviMain::SQLInit()
 {
     //初始化 流路径
     dboptPath=DbOptPath;
@@ -991,4 +997,30 @@ int NaviMain::sql_out_sky(rtk_t *rtk, char *tablename)
 //    return 1;
 //}
 
+
+// open monitor port --------------------------------------------------------
+//void NaviMain::OpenMoniPort(int port)
+//{
+//    QString s;
+//    int i;
+//    char path[64];
+
+//    if (port<=0) return;
+
+//    trace(3,"OpenMoniPort: port=%d\n",port);
+
+//    for (i=0;i<=MAXPORTOFF;i++) {
+
+//        sprintf(path,":%d",port+i);
+
+//        if (stropen(&monistr,STR_TCPSVR,STR_MODE_RW,path)) {
+//            strsettimeout(&monistr,TimeoutTime,ReconTime);
+//            if (i>0) setWindowTitle(QString(tr("%1 ver.%2 (%3)")).arg(PRGNAME).arg(VER_RTKLIB).arg(i+1));
+//            OpenPort=MoniPort+i;
+//            return;
+//        }
+//    }
+//    QMessageBox::critical(this,tr("Error"),QString(tr("monitor port %1-%2 open error")).arg(port).arg(port+MAXPORTOFF));
+//    OpenPort=0;
+//}
 

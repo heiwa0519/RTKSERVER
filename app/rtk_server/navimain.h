@@ -120,7 +120,7 @@ public:
 
 
 //————————————数据库相关函数——————————————————————————————————
-    int Navi_Init();//数据库初始化
+    int SQLInit();//数据库初始化
     int SQLconnect_close();//关闭数据库
 
     int creatTable(char* netname,char* basename,char* rovername,char*tableformat);//创建数据表，并定义表的主键、列名、列类型等
@@ -152,7 +152,7 @@ public:
 //————————————数据库相关函数——————————————————————————————————
 
 
-    int OpenMoniPort(int port);
+    void OpenMoniPort(int port);
 
 public slots:
         void outPutSol();

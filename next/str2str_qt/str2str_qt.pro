@@ -9,7 +9,7 @@ CONFIG -= app_bundle
 
 include(../../RTKLib.pri)
 
-TARGET = rtk_record
+TARGET = str2str_qt
 TEMPLATE = app
 
 INCLUDEPATH += ../../src
@@ -32,13 +32,10 @@ PRE_TARGETDEPS = $${RTKLIB}
 
 
 SOURCES += \
-        main.cpp \
-        recordmain.cpp
+    str2str.c
+
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
-
-HEADERS += \
-    recordmain.h

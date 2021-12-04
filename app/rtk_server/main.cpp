@@ -39,12 +39,12 @@ int main(int argc, char *argv[])
     //开始程序 构建函数 读取ini文件 获取OPT file 路径
     w.loadini();
 
-    //读conf dbopt  将设置读取到全局变量
-
     //初始化rtknavi所需的各项参数 读取conf
     w.svrinit();
+
     //初始化MySQL连接,读取参数到class内   读取dbopt
-    w.Navi_Init();
+    w.SQLInit();
+
     //解算开始
     w.svrstart();
 

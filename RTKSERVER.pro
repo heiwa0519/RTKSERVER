@@ -2,7 +2,8 @@ TEMPLATE = subdirs
 
 SUBDIRS= src \
          app \
+         korolib \
          next \
-         learn
+#         learn
 
 app.depends = src

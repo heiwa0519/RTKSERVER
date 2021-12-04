@@ -1,0 +1,57 @@
+# RTK_Record options (2021/11/25 10:52:00, v.1.0 )
+
+
+opt1-0    =10000        # inactive timeout (ms)
+opt1-1    =10000        # interval to reconnect (ms)
+opt1-2    =1000         # averaging time of data rate (ms)
+opt1-3    =32768        # receive/send buffer size (bytes)
+opt1-4    =10           # server cycle (ms)
+opt1-5    =0            # NMEA request cycle (ms) (0:no)
+opt1-6    =30           # file swap margin (s)
+opt1-7    =0            # relay back of output stream (0:no)
+
+
+opt2-0    =E:\GNSSRecord\        # log directory
+opt2-1    =%r/%r%y%n             # filename format                         ::T
+opt2-2    =24                    # Swip Intv ( \0.25\0.5\1\2\3\6\12\24) H  ::S=24
+opt2-3    =on                    # Time Tag  (0:off,1:on)
+
+opt-end
+
+input1-ID  =SK01                    
+input1-type=4                   #  (0:off,1:serial,2:file,3:tcpsvr,4:tcpcli,6:ntripcli,7:ftp,8:http)
+input1-path=101.34.228.202:10001
+
+input2-ID  =SK02                     
+input2-type=4                   #  (0:off,1:serial,2:file,3:tcpsvr,4:tcpcli,6:ntripcli,7:ftp,8:http)
+input2-path=101.34.228.202:10002
+
+input3-ID  =SK03                     
+input3-type=4                   #  (0:off,1:serial,2:file,3:tcpsvr,4:tcpcli,6:ntripcli,7:ftp,8:http)
+input3-path=101.34.228.202:10003
+
+input4-ID  =SK04                     
+input4-type=4                   #  (0:off,1:serial,2:file,3:tcpsvr,4:tcpcli,6:ntripcli,7:ftp,8:http)
+input-4path=101.34.228.202:10004
+
+input5-ID  =QZ01                     
+input5-type=6                 #  (0:off,1:serial,2:file,3:tcpsvr,4:tcpcli,6:ntripcli,7:ftp,8:http)
+input5-path=admin:123456@115.231.98.134:2101/CH01
+
+input6-ID  =QZ02        
+input6-type=6                 #  (0:off,1:serial,2:file,3:tcpsvr,4:tcpcli,6:ntripcli,7:ftp,8:http)
+input6-path=admin:123456@115.231.98.134:2101/CH02
+
+input7-ID  =QZ03        
+input7-type=6                 #  (0:off,1:serial,2:file,3:tcpsvr,4:tcpcli,6:ntripcli,7:ftp,8:http)
+input7-path=admin:123456@115.231.98.134:2101/CH03
+
+input8-ID  =QZ04
+input8-type=6                #  (0:off,1:serial,2:file,3:tcpsvr,4:tcpcli,6:ntripcli,7:ftp,8:http)
+input8-path=admin:123456@115.231.98.134:2101/CH04
+
+streams-end
+
+
+
+

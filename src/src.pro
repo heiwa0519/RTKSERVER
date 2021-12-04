@@ -2,6 +2,11 @@
 #
 # Project created by QtCreator 2016-02-09T08:58:44
 #
+# src.pro工程文件 Rtklib2.4.3 b33 Emlid
+# src的文件夹的源码部分替换为2.4.3 b34版本源码
+# 新加了部分 -Wno-error= 使得程序能够在linux和win平台下的qt运行并编译生成可执行程序
+# 在编译器版本Qt 6.1.2 GCC 64bit 和 Qt 6.2.1 MinGW 64bit 下可以正常运行
+#
 #-------------------------------------------------
 
 QT       -= core gui

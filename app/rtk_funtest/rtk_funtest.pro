@@ -13,7 +13,7 @@ TARGET = rtk_funtest
 TEMPLATE = app
 
 INCLUDEPATH += ../../src
-
+INCLUDEPATH += ../../korolib
 
 linux{
     RTKLIB =../../src/libRTKLib.a

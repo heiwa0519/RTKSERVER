@@ -7,6 +7,7 @@
 #include <QCoreApplication>
 #include<QDebug>
 #include "rtklib.h"
+#include "korolib.h"
 
 
 /* multiply matrix -----------------------------------------------------------
@@ -38,18 +39,43 @@ extern void matmul2(const char *tr, int n, int k, int m, double alpha,
     }
 }
 
+NULL
+
+
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
 
-   double *A,*B,*C;
-   A=zeros(3,3);B=zeros(2,3);
-   C=zeros(3,3);
+   //double *A,*B,*C;
+  // A=zeros(3,3);B=zeros(2,3);
+   //C=zeros(3,3);
 
-   matmul2("NT",3,2,3,1.0,A,B,0.0,C);
+  // matmul2("NT",3,2,3,1.0,A,B,0.0,C);
 
 
+
+   char testchar[]=" -in tcpcli://101.34.228.202:10001 -out ntrips://admin:123456@101.34.12.202:2101/sk01";
+   int argcc;
+   char *argvv[MAX_CMD_ARGV];
+   char2arg(testchar,&argcc,argvv,MAX_CMD_ARGV);
+
+   printf("toatl:%d\n",argcc);
+   for(int i=0;i<argcc;i++)
+   {
+       printf("%s\n",argvv[i]);
+   }
+
+  // argtest(n,);
+
+
+
+   printf("toatl:%d\n",argc);
+   for(int i=0;i<argc;i++)
+   {
+       printf("%s\n",argv[i]);
+   }
 
     return a.exec();
 }
