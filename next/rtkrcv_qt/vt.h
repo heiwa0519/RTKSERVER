@@ -8,7 +8,7 @@
 *-----------------------------------------------------------------------------*/
 #ifndef VT_H
 #define VT_H
-//#include <termios.h>
+#include <termios.h>
 #include "rtklib.h"
 
 #define MAXBUFF     4096                /* size of line buffer */
