@@ -31,14 +31,18 @@ win32 {
 PRE_TARGETDEPS = $${RTKLIB}
 
 
-SOURCES += \
+    SOURCES += \
         rtkrcv.c \
         vt.c
+
+
+    HEADERS += \
+        vt.h
+
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-HEADERS += \
-    vt.h
+
