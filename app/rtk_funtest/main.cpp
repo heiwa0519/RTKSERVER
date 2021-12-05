@@ -7,10 +7,7 @@
 #include <QCoreApplication>
 #include<QDebug>
 #include "rtklib.h"
-//#include "korolib.h"
-
-#define MAX_CMD_ARGV  50
-
+#include "korolib.h"
 
 
 /* multiply matrix -----------------------------------------------------------
@@ -42,42 +39,6 @@ extern void matmul2(const char *tr, int n, int k, int m, double alpha,
     }
 }
 
-int char2arg(char* str, int* argc, char** argv, int number)
-{
-    char *p;
-    int num=0;
-    int word_start = 1;
-
-    if(argc == NULL || argv == NULL)
-        return -1;
-
-    p=str;
-
-    while(*p){
-        if((*p == '\r') || (*p == '\n')){
-            *p = '\0';
-            break;
-        }
-        if((*p == ' ') || (*p == '\t')){
-            word_start = 1;
-            *p = '\0';
-            p++;
-            continue;
-        }
-        if(num >= number)
-            break;
-
-        if(word_start){
-            argv[num++] = p;
-            word_start = 0;
-        }
-        p++;
-    }
-
-    *argc = num;
-
-    return 0;
-}
 
 int main(int argc, char *argv[])
 {
@@ -95,7 +56,7 @@ int main(int argc, char *argv[])
    char testchar[]=" -in tcpcli://101.34.228.202:10001 -out ntrips://admin:123456@101.34.12.202:2101/sk01";
    int argcc;
    char *argvv[MAX_CMD_ARGV];
-   char2arg(testchar,&argcc,argvv,MAX_CMD_ARGV);
+//   char2arg(testchar,&argcc,argvv,MAX_CMD_ARGV);
 
    printf("toatl:%d\n",argcc);
    for(int i=0;i<argcc;i++)

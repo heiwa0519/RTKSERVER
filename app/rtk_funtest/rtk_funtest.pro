@@ -36,9 +36,6 @@ PRE_TARGETDEPS = $${RTKLIB}
 SOURCES += \
         main.cpp
 
-HEADERS += \
-    korolib.h
-
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin

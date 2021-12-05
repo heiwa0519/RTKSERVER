@@ -39,17 +39,6 @@ linux{
            vt.h
 }
 
-<<<<<<< HEAD
-=======
-    SOURCES += \
-        rtkrcv.c \
-        vt.c
->>>>>>> debug
-
-
-    HEADERS += \
-        vt.h
-
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
