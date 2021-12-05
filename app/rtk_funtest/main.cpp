@@ -7,7 +7,10 @@
 #include <QCoreApplication>
 #include<QDebug>
 #include "rtklib.h"
-#include "korolib.h"
+//#include "korolib.h"
+
+#define MAX_CMD_ARGV  50
+
 
 
 /* multiply matrix -----------------------------------------------------------
@@ -39,9 +42,42 @@ extern void matmul2(const char *tr, int n, int k, int m, double alpha,
     }
 }
 
-NULL
+int char2arg(char* str, int* argc, char** argv, int number)
+{
+    char *p;
+    int num=0;
+    int word_start = 1;
 
+    if(argc == NULL || argv == NULL)
+        return -1;
 
+    p=str;
+
+    while(*p){
+        if((*p == '\r') || (*p == '\n')){
+            *p = '\0';
+            break;
+        }
+        if((*p == ' ') || (*p == '\t')){
+            word_start = 1;
+            *p = '\0';
+            p++;
+            continue;
+        }
+        if(num >= number)
+            break;
+
+        if(word_start){
+            argv[num++] = p;
+            word_start = 0;
+        }
+        p++;
+    }
+
+    *argc = num;
+
+    return 0;
+}
 
 int main(int argc, char *argv[])
 {
