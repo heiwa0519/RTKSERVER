@@ -572,7 +572,7 @@ static void *rtksvrthread(void *arg)
     uint32_t tick,ticknmea,tick1hz,tickreset;
     uint8_t *p,*q;
     char msg[128];
-    int i,j,n,fobs[3]={0},cycle,cputime;
+    int i,j,n,fobs[3]={0},cycle,cputime;  //fobs[i]数据流i的obs观测值数量
     
     tracet(3,"rtksvrthread:\n");
     
@@ -583,8 +583,9 @@ static void *rtksvrthread(void *arg)
     
     for (cycle=0;svr->state;cycle++) {
         tick=tickget();
+        //读取数据流
         for (i=0;i<3;i++) {
-            p=svr->buff[i]+svr->nb[i]; q=svr->buff[i]+svr->buffsize;//指针p、q指向buff的末尾
+            p=svr->buff[i]+svr->nb[i]; q=svr->buff[i]+svr->buffsize;//指针p指向svr->buff[i]的开始位置  q指向最大位置 用来描述数据占用的字节
             
             /* read receiver raw/rtcm data from input stream */
             if ((n=strread(svr->stream+i,p,q-p))<=0) {
@@ -592,15 +593,17 @@ static void *rtksvrthread(void *arg)
             }
             /* write receiver raw/rtcm data to log stream */
             strwrite(svr->stream+i+5,p,n);
-            svr->nb[i]+=n;
+            svr->nb[i]+=n;//更新输入数据流的字节数
             
-            /* save peek buffer */
+            /* save peek buffer *///保存溢出的数据
             rtksvrlock(svr);
             n=n<svr->buffsize-svr->npb[i]?n:svr->buffsize-svr->npb[i];
             memcpy(svr->pbuf[i]+svr->npb[i],p,n);
             svr->npb[i]+=n;
             rtksvrunlock(svr);
         }
+
+        //输入数据流解码
         for (i=0;i<3;i++) {
             if (svr->format[i]==STRFMT_SP3||svr->format[i]==STRFMT_RNXCLK) {
                 /* decode download file */
@@ -611,7 +614,7 @@ static void *rtksvrthread(void *arg)
                 fobs[i]=decoderaw(svr,i);
             }
         }
-        /* averaging single base pos */ //如果基站的坐标选择的是average single  那么会对基站进行单点定位
+        /* averaging single base pos */ //如果基站的坐标选择的是average single  那么会对基站进行单点定位，并求坐标的平均值
         if (fobs[1]>0&&svr->rtk.opt.refpos==POSOPT_SINGLE) {
             if ((svr->rtk.opt.maxaveep<=0||svr->nave<svr->rtk.opt.maxaveep)&&
                 pntpos(svr->obs[1][0].data,svr->obs[1][0].n,&svr->nav,
@@ -626,10 +629,10 @@ static void *rtksvrthread(void *arg)
         for (i=0;i<fobs[0];i++) { /* for each rover observation data */
             obs.n=0;
             for (j=0;j<svr->obs[0][i].n&&obs.n<MAXOBS*2;j++) {
-                obs.data[obs.n++]=svr->obs[0][i].data[j];
+                obs.data[obs.n++]=svr->obs[0][i].data[j];//获取rover第i组观测数据的观测数据 一组观测数据有多个频段 所以有多个data
             }
             for (j=0;j<svr->obs[1][0].n&&obs.n<MAXOBS*2;j++) {
-                obs.data[obs.n++]=svr->obs[1][0].data[j];
+                obs.data[obs.n++]=svr->obs[1][0].data[j];//获取base第1组观测数据的各频段数据
             }
             /* carrier phase bias correction */
             if (!strstr(svr->rtk.opt.pppopt,"-DIS_FCB")) {

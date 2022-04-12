@@ -34,6 +34,8 @@
 #include "rtklib.h"
 
 
+
+
 #define MAX_CMD_ARGV  50
 
 
@@ -437,46 +439,80 @@ int char2arg(char* str, int* argc, char** argv, int number)
 
 
 
-int main()
+int main(int argc, char **argv)
 {
-    int dispint=5000;
-    int n=4; //任务数量
+    int dispint=1000;//控制台状态刷新的时间
+    int maxtask=50;//最大支持的任务数量
+    int tasknum=0;
+
+    char task[maxtask][MAXCHAR];
+
+    char taskpath[MAXCHAR];
+
+    //读文件，获取数据流内容和数据流数量
+
+    if(argc<2)
+    {
+        strcpy(taskpath,"tasklist.txt");
+
+    }
+    else
+    {
+     for (int i=1;i<argc;i++)
+     {
+         if (!strcmp(argv[i],"-i")&&i+1<argc)
+         {
+              strcpy(taskpath,argv[++i]);
+         }
+     }
+    }
+
+
+
+     printf("set tasklist path: %s\n",taskpath);
+
+
+          //  if (!decodepath(argv[++i],types,paths[0],fmts)) return -1;
+
+
+
+    FILE *tasklist=fopen(taskpath,"r");
+    if(tasklist == NULL)
+        {
+            printf("taskpath: %s open error!\n",taskpath);
+            return 0;
+        }
+
+
+   // char a[MAXCHAR];
+    //fgets(a,MAXCHAR,tasklist);//读文件头并略过
+
+    for(tasknum=0;tasknum<maxtask;)
+    {
+
+        fgets(task[tasknum],MAXCHAR,tasklist);
+
+        if (strstr(task[tasknum], "END OF LIST") != NULL)
+        {
+            printf("tasknum=%d end\n",tasknum);
+            break;
+        }
+
+        printf("%d %s\n",tasknum,task[tasknum]);
+        tasknum++;
+
+    }
+
+
+    //确定要开的线程数量n
+    int n=tasknum;
+
     int argcc[n];
     char *argvv[n][MAX_CMD_ARGV];
 
 
-    strsvr_t strsvr[4];
+    strsvr_t strsvr[n];
 
-//    strsvr[0]=new strsvr_t;
-//    strsvr[1]=new strsvr_t;
- //   strsvr[2]=new strsvr_t;
- //   strsvr[3]=new strsvr_t;
-
-    //tcp client   : tcpcli://addr[:port]",
-    //    ntrip client : ntrip://[user[:passwd]@]addr[:port][/mntpnt]",
-    //file         : [file://]path[::T][::+start][::xseppd][::S=swap]",
-
-
-
-    char task[4][MAXCHAR]={
-//                "task1 -in ntrip://koro:123456@115.231.98.134:2101/CH01 -out ntrips://koro:123456@101.34.12.202:2101/CH01",
-//                "task1 -in ntrip://koro:123456@115.231.98.134:2101/CH02 -out ntrips://koro:123456@101.34.12.202:2101/CH02",
- //               "task1 -in ntrip://koro:123456@115.231.98.134:2101/CH03 -out ntrips://koro:123456@101.34.12.202:2101/CH03",
- //               "task1 -in ntrip://koro:123456@115.231.98.134:2101/CH04 -out ntrips://koro:123456@101.34.12.202:2101/CH04"
-//        "task1 -in tcpcli://101.34.228.202:10001 -out tcpsvr://:20001",
-//        "task1 -in tcpcli://101.34.228.202:10002 -out tcpsvr://:20001",
-//        "task1 -in tcpcli://101.34.228.202:10003 -out tcpsvr://:20001",
-//        "task1 -in tcpcli://101.34.228.202:10004 -out tcpsvr://:20001"
-        "task1 -in tcpcli://101.34.228.202:10001 -out file://G:/strtest/SK01%y%n.log::T::S=24",
-        "task1 -in tcpcli://101.34.228.202:10002 -out file://G:/strtest/SK02%y%n.log::T::S=24",
-        "task1 -in tcpcli://101.34.228.202:10003 -out file://G:/strtest/SK03%y%n.log::T::S=24",
-        "task1 -in tcpcli://101.34.228.202:10004 -out file://G:/strtest/SK04%y%n.log::T::S=24"
-//        "task1 -in ntrip://koro/123456@115.231.98.134:2101/CH01 -out file://CH%y%n/CH01%y%n.log::T::S=24",
-//        "task1 -in ntrip://koro/123456@115.231.98.134:2101/CH02 -out file://CH%y%n/CH02%y%n.log::T::S=24",
-//        "task1 -in ntrip://koro/123456@115.231.98.134:2101/CH03 -out file://CH%y%n/CH03%y%n.log::T::S=24",
-//        "task1 -in ntrip://koro/123456@115.231.98.134:2101/CH04 -out file://CH%y%n/CH04%y%n.log::T::S=24"
-
-    };
 
 
     for(int i=0;i<n;i++)
@@ -495,16 +531,18 @@ int main()
     for (intrflg=0;!intrflg;)
     {
 
+        printf("taskpath:%s\n",taskpath);
+
         for(int i=0;i<n;i++)
         {
+
 
             svrstate(&strsvr[i],i+1);
 
         }
         sleepms(dispint);
+        system("cls");
     }
-
-
 
 
 
