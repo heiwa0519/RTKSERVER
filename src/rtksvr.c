@@ -1167,3 +1167,19 @@ extern int rtksvrmark(rtksvr_t *svr, const char *name, const char *comment)
     rtksvrunlock(svr);
     return 1;
 }
+
+
+extern int svrThreadCreat(rtksvr_t *svr)
+{
+#ifdef WIN32
+    if (!(svr->thread=CreateThread(NULL,0,rtksvrthread,svr,0,NULL))) {
+#else
+    if (pthread_create(&svr->thread,NULL,rtksvrthread,svr)) {
+#endif
+        for (int i=0;i<MAXSTRRTK;i++) strclose(svr->stream+i);
+        //sprintf(errmsg,"thread create error\n");
+        return 0;
+    }
+    return 1;
+
+}

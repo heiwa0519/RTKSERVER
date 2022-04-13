@@ -389,7 +389,7 @@ extern "C" {
 #define IONOOPT_OFF 0                   /* ionosphere option: correction off */
 #define IONOOPT_BRDC 1                  /* ionosphere option: broadcast model */
 #define IONOOPT_SBAS 2                  /* ionosphere option: SBAS model */
-#define IONOOPT_IFLC 3                  /* ionosphere option: L1/L2 iono-free LC *///Ionosphere‐free linear combination
+#define IONOOPT_IFLC 3                  /* ionosphere option: L1/L2 iono-free LC */
 #define IONOOPT_EST 4                   /* ionosphere option: estimation */
 #define IONOOPT_TEC 5                   /* ionosphere option: IONEX TEC model */
 #define IONOOPT_QZS 6                   /* ionosphere option: QZSS broadcast model */
@@ -984,7 +984,7 @@ typedef struct {        /* processing options type */
                         /* (0:pos in prcopt,  1:average of single pos, */
                         /*  2:read from file, 3:rinex header, 4:rtcm pos) */
     double eratio[NFREQ]; /* code/phase error ratio */
-    double err[5];      /* measurement error factor */    //prcopt_default;  default positioning options {100.0,0.003,0.003,0.0,1.0}
+    double err[5];      /* measurement error factor */
                         /* [0]:reserved */
                         /* [1-3]:error factor a/b/c of phase (m) */
                         /* [4]:doppler frequency (hz) */
@@ -1237,7 +1237,7 @@ typedef struct {        /* RTK server type */
     int npb[3];         /* bytes in input peek buffers */
     uint8_t *buff[3];   /* input buffers {rov,base,corr} */
     uint8_t *sbuf[2];   /* output buffers {sol1,sol2} */
-    uint8_t *pbuf[3];   /*  buffers {rov,base,corr} */
+    uint8_t *pbuf[3];   /* peek buffers {rov,base,corr} */
     sol_t solbuf[MAXSOLBUF]; /* solution buffer */
     uint32_t nmsg[3][10]; /* input message counts */
     raw_t  raw [3];     /* receiver raw control {rov,base,corr} */
@@ -1781,7 +1781,14 @@ extern int showmsg(const char *format,...);
 extern void settspan(gtime_t ts, gtime_t te);
 extern void settime(gtime_t time);
 
+
+
+/* additional functions for RTKSERVER ---------------------------------------------*/
+EXPORT int svrThreadCreat(rtksvr_t *svr);
+
+
 #ifdef __cplusplus
 }
 #endif
+
 #endif /* RTKLIB_H */

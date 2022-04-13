@@ -1,5 +1,4 @@
 TEMPLATE = subdirs
 
 SUBDIRS= rtk_server \
-    rtk_funtest \
-    rtk_tools
+        str2str_mult \

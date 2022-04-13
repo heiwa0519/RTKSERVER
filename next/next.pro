@@ -2,9 +2,10 @@ TEMPLATE = subdirs
 
 SUBDIRS= rtk_analysis \
 #    rtk_record  \
-    rtkrcv_mult \
-    str2str_mult \
+#    rtkrcv_mult \
 #    str2str_qt     \
-    SPP\
+#    SPP\
 #    rtkrcv_qt\
-
+    rtk_funtest \
+    rtk_tools\
+    server_mult

@@ -10,7 +10,7 @@ CONFIG -= app_bundle
 
 include(../../RTKLib.pri)
 
-TARGET = rtk_server.v1.2
+TARGET = server_mult.v1.0
 TEMPLATE = app
 
 INCLUDEPATH += ../../src
@@ -34,7 +34,8 @@ PRE_TARGETDEPS = $${RTKLIB}
 
 SOURCES += \
         main.cpp \
-        navimain.cpp
+    servermain.cpp
+
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -44,4 +45,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 DISTFILES +=
 
 HEADERS += \
-    navimain.h
+    server_mult.h \
+    svrsettings.h
+
