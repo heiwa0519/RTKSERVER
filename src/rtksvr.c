@@ -1169,12 +1169,152 @@ extern int rtksvrmark(rtksvr_t *svr, const char *name, const char *comment)
 }
 
 
+
+/* additional functions for RTKSERVER ---------------------------------------------*/
+
+/* rtk server thread ---------------------------------------------------------*/
+#ifdef WIN32
+static DWORD WINAPI svrThread(void *arg)
+#else
+static void *svrThread(void *arg)
+#endif
+{
+    rtksvr_t *svr=(rtksvr_t *)arg;
+    obs_t obs;
+    obsd_t data[MAXOBS*2];
+    sol_t sol={{0}};
+    double tt;
+    uint32_t tick,ticknmea,tick1hz,tickreset;
+    uint8_t *p,*q;
+    char msg[128];
+    int i,j,n,fobs[3]={0},cycle,cputime;  //fobs[i]数据流i的obs观测值数量
+
+    tracet(3,"rtksvrthread:\n");
+
+    svr->state=1; obs.data=data;
+    svr->tick=tickget();
+    ticknmea=tick1hz=svr->tick-1000;
+    tickreset=svr->tick-MIN_INT_RESET;
+
+    for (cycle=0;svr->state;cycle++) {
+        tick=tickget();
+        //读取数据流
+        for (i=0;i<3;i++) {
+            p=svr->buff[i]+svr->nb[i]; q=svr->buff[i]+svr->buffsize;//指针p指向svr->buff[i]的开始位置  q指向最大位置 用来描述数据占用的字节
+
+            /* read receiver raw/rtcm data from input stream */
+            if ((n=strread(svr->stream+i,p,q-p))<=0) {
+                continue;
+            }
+            /* write receiver raw/rtcm data to log stream */
+            strwrite(svr->stream+i+5,p,n);
+            svr->nb[i]+=n;//更新输入数据流的字节数
+
+            /* save peek buffer *///保存溢出的数据
+            rtksvrlock(svr);
+            n=n<svr->buffsize-svr->npb[i]?n:svr->buffsize-svr->npb[i];
+            memcpy(svr->pbuf[i]+svr->npb[i],p,n);
+            svr->npb[i]+=n;
+            rtksvrunlock(svr);
+        }
+
+        //输入数据流解码
+        for (i=0;i<3;i++) {
+            if (svr->format[i]==STRFMT_SP3||svr->format[i]==STRFMT_RNXCLK) {
+                /* decode download file */
+                decodefile(svr,i);
+            }
+            else {
+                /* decode receiver raw/rtcm data */
+                fobs[i]=decoderaw(svr,i);
+            }
+        }
+        /* averaging single base pos */ //如果基站的坐标选择的是average single  那么会对基站进行单点定位，并求坐标的平均值
+        if (fobs[1]>0&&svr->rtk.opt.refpos==POSOPT_SINGLE) {
+            if ((svr->rtk.opt.maxaveep<=0||svr->nave<svr->rtk.opt.maxaveep)&&
+                pntpos(svr->obs[1][0].data,svr->obs[1][0].n,&svr->nav,
+                       &svr->rtk.opt,&sol,NULL,NULL,msg)) {
+                svr->nave++;
+                for (i=0;i<3;i++) {
+                    svr->rb_ave[i]+=(sol.rr[i]-svr->rb_ave[i])/svr->nave;
+                }
+            }
+            for (i=0;i<3;i++) svr->rtk.opt.rb[i]=svr->rb_ave[i];
+        }
+        for (i=0;i<fobs[0];i++) { /* for each rover observation data */
+            obs.n=0;
+            for (j=0;j<svr->obs[0][i].n&&obs.n<MAXOBS*2;j++) {
+                obs.data[obs.n++]=svr->obs[0][i].data[j];//获取rover第i组观测数据的观测数据 一组观测数据有多个频段 所以有多个data
+            }
+            for (j=0;j<svr->obs[1][0].n&&obs.n<MAXOBS*2;j++) {
+                obs.data[obs.n++]=svr->obs[1][0].data[j];//获取base第1组观测数据的各频段数据
+            }
+            /* carrier phase bias correction */
+            if (!strstr(svr->rtk.opt.pppopt,"-DIS_FCB")) {
+                corr_phase_bias(obs.data,obs.n,&svr->nav);
+            }
+            /* rtk positioning */
+            rtksvrlock(svr);
+            rtkpos(&svr->rtk,obs.data,obs.n,&svr->nav);
+            rtksvrunlock(svr);
+
+            if (svr->rtk.sol.stat!=SOLQ_NONE) {
+
+                /* adjust current time */
+                tt=(int)(tickget()-tick)/1000.0+DTTOL;
+                timeset(gpst2utc(timeadd(svr->rtk.sol.time,tt)));
+
+                /* write solution */
+                svrOutput(svr);
+
+                writesol(svr,i);
+            }
+            /* if cpu overload, inclement obs outage counter and break */
+            if ((int)(tickget()-tick)>=svr->cycle) {
+                svr->prcout+=fobs[0]-i-1;
+            }
+        }
+        /* send null solution if no solution (1hz) */
+        if (svr->rtk.sol.stat==SOLQ_NONE&&(int)(tick-tick1hz)>=1000) {
+            writesol(svr,0);
+            tick1hz=tick;
+        }
+        /* write periodic command to input stream */
+        for (i=0;i<3;i++) {
+            periodic_cmd(cycle*svr->cycle,svr->cmds_periodic[i],svr->stream+i);
+        }
+        /* send nmea request to base/nrtk input stream */
+        if (svr->nmeacycle>0&&(int)(tick-ticknmea)>=svr->nmeacycle) {
+            send_nmea(svr,&tickreset);
+            ticknmea=tick;
+        }
+        if ((cputime=(int)(tickget()-tick))>0) svr->cputime=cputime;
+
+        /* sleep until next cycle */
+        sleepms(svr->cycle-cputime);
+    }
+    for (i=0;i<MAXSTRRTK;i++) strclose(svr->stream+i);
+    for (i=0;i<3;i++) {
+        svr->nb[i]=svr->npb[i]=0;
+        free(svr->buff[i]); svr->buff[i]=NULL;
+        free(svr->pbuf[i]); svr->pbuf[i]=NULL;
+        free_raw (svr->raw +i);
+        free_rtcm(svr->rtcm+i);
+    }
+    for (i=0;i<2;i++) {
+        svr->nsb[i]=0;
+        free(svr->sbuf[i]); svr->sbuf[i]=NULL;
+    }
+    return 0;
+}
+
+
 extern int svrThreadCreat(rtksvr_t *svr)
 {
 #ifdef WIN32
     if (!(svr->thread=CreateThread(NULL,0,rtksvrthread,svr,0,NULL))) {
 #else
-    if (pthread_create(&svr->thread,NULL,rtksvrthread,svr)) {
+    if (pthread_create(&svr->thread,NULL,svrThread,svr)) {
 #endif
         for (int i=0;i<MAXSTRRTK;i++) strclose(svr->stream+i);
         //sprintf(errmsg,"thread create error\n");
@@ -1182,4 +1322,12 @@ extern int svrThreadCreat(rtksvr_t *svr)
     }
     return 1;
 
+}
+
+extern int svrOutput(rtksvr_t *svr)
+{
+
+
+//    printf("%d %d %f\n",svr->state,svr->solbuf[0].stat,svr->solbuf[0].ratio);
+    return 0;
 }

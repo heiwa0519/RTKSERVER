@@ -1786,6 +1786,8 @@ extern void settime(gtime_t time);
 /* additional functions for RTKSERVER ---------------------------------------------*/
 EXPORT int svrThreadCreat(rtksvr_t *svr);
 
+EXPORT int svrOutput(rtksvr_t *svr);
+
 
 #ifdef __cplusplus
 }

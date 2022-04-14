@@ -4,6 +4,11 @@
 #include"rtklib.h"
 #include"server_mult.h"
 
+/* global setting ----------------------------------------------------------*/
+
+//basic conf path:
+#define DEFAULT_SETTING  "D:/RTKSERVER/conf/server_mult/default.ini"
+
 
 
 

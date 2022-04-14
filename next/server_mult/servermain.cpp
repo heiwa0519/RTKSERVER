@@ -46,10 +46,11 @@ extern int svrMain()
 
     //初始化svr结构体和moni
     svrInit(svr,moni);
-
+    printf("1\n");
 
     //载入必要的参数
     optLoad(&svrio);
+    printf("2\n");
 
     //其他参数更改【未实现】
     //optChange(svr);
@@ -59,6 +60,7 @@ extern int svrMain()
 
     //启动线程
     svrStart(svr,&svrio);
+    printf("4\n");
 
     return 0;
 }
@@ -268,8 +270,12 @@ extern int svrStart(rtksvr_t *svr,svrio_t *svrio)
     if (svrThreadCreat(svr)) {
 
         //sprintf(errmsg,"thread create error\n");
+            printf("0\n");
         return 0;
     }
+
+    printf("3\n");
+
     return 1;
 
 
