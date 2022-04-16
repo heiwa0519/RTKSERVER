@@ -1,10 +1,10 @@
 
 sql-dbconntype =QMYSQL         #
-sql-hostname   =101.34.12.202 #
-sql-port       =3306          #
-sql-dbname     =skgnss        #
-sql-username   =1121910079    #
-sql-password   =1121910079    #
+sql-hostname   =               #
+sql-port       =3306           #
+sql-dbname     =               #
+sql-username   =               #
+sql-password   =               #
 
 sql-net        =TEST          #
 sql-base       =KORO          #
