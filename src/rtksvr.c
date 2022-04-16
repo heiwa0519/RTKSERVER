@@ -413,7 +413,7 @@ static void decodefile(rtksvr_t *svr, int index)
     strncpy(file,(char *)svr->buff[index],nb-2); file[nb-2]='\0';
     svr->nb[index]=0;
     
-    rtksvrunlock(svr);
+    rtksvrunlock(svr );
     
     if (svr->format[index]==STRFMT_SP3) { /* precise ephemeris */
         

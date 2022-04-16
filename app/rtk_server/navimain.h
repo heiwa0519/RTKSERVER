@@ -58,7 +58,7 @@ public:
     double roverxyz[3];//重大问题！ llh转为xyz后计算的ENU U方向差别很大，暂时把xyz和llh都设置为输入参数，后续再测试为啥llh和xyz互转值不一样（与rtklib区别）
 
     char postable[MAXCHAR];
-    char skytable[MAXCHAR];
+    //char skytable[MAXCHAR];
     char obstable[MAXCHAR];
     char eventtable[MAXCHAR];
 
@@ -148,6 +148,8 @@ public:
     int sql_out_pos(sol_t *sol,char* tablename,int num);
     int sql_out_obs(obs_t *obs_R,obs_t *obs_B,char* tablename);
     int sql_out_sky(rtk_t *rtk,char* tablename);
+    int sql_out_snr(rtk_t *rtk,char* tablename);
+
 
 //————————————数据库相关函数——————————————————————————————————
 

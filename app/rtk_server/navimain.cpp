@@ -198,7 +198,7 @@ void NaviMain::loadini()
 {
 
 #ifdef WIN32
-    loadopts("G:/RTKSERVER/data/conf/CH01_CH02/option.ini",iniopts);
+    loadopts("D:/RTKSERVER/conf/server/option.ini",iniopts);
 #else
     loadopts("option.ini",iniopts);
 #endif
@@ -327,13 +327,13 @@ void NaviMain::outputsol()
     svr->nsol=0;//solbuff计数清零
 
 
-    if(tosqlsec!=svr->rtk.sol.time.time)
-    {
-        tosqlsec=svr->rtk.sol.time.time;
-        sql_out_sky(&svr->rtk,skytable);
-        sql_out_obs(svr->obs[0],svr->obs[1],obstable);
-        //sql_out_obs(svr->obs[1],obstable,1);
-    }
+//    if(tosqlsec!=svr->rtk.sol.time.time)
+//    {
+//        tosqlsec=svr->rtk.sol.time.time;
+//        sql_out_sky(&svr->rtk,skytable);
+//        sql_out_obs(svr->obs[0],svr->obs[1],obstable);
+//        //sql_out_obs(svr->obs[1],obstable,1);
+//    }
 
 
 
@@ -573,16 +573,16 @@ int NaviMain::creatTable(char* netname,char* basename,char* rovername,char*table
 {
 
 
-    sprintf(postable,"%s_%s_%s_pos_%s",netname,basename,rovername,tableformat);
-    sprintf(skytable,"%s_%s_%s_sky_%s",netname,basename,rovername,tableformat);
-    sprintf(obstable,"%s_%s_%s_snr_%s",netname,basename,rovername,tableformat);
+    sprintf(postable,"bak_%s_%s_pos_1s_%s",basename,rovername,tableformat);
+//    sprintf(skytable,"%s_%s_%s_sky_%s",netname,basename,rovername,tableformat);
+//    sprintf(obstable,"bak_%s_%s_obs_1s_%s",basename,rovername,tableformat);
     //sprintf(baseobstable,"%s_%s_OBS_%s",netname,basename,tableformat);
-    sprintf(eventtable,"%s_eventRecord",netname);
+//    sprintf(eventtable,"%s_eventRecord",netname);
 
 
     sql_creat_ecef(postable);
-    sql_creat_sky(skytable);
-    sql_creat_obs(obstable);
+//    sql_creat_sky(skytable);
+//    sql_creat_obs(obstable);
 
 }
 
@@ -601,6 +601,7 @@ int NaviMain::sol_to_sql(sol_t *sol, char* table_name)
 
     //sql_out_rr(sol,table_name,num);
     sql_out_ecef(sol,table_name,num);
+    //sql_out_pos(sol,table_name,num);
 
     qDebug()<<num<<svr->nsol<<sol->time.time<<"state"<<sol->stat;
 
@@ -616,8 +617,30 @@ int NaviMain::sql_creat_ecef(char *tablename)
     creat.append(tablename);//表名
 
     //定义主键、列名、列类型
-    creat.append("(time DATETIME primary key,X_ECEF double,Y_ECEF double,Z_ECEF double,Q int,ns int,sd_x float,sd_y float,sd_z float,E double,N double,U double,age float,ratio float)");
-
+    creat.append("("
+                 "id                   bigint not null auto_increment comment 'ID',"
+                 "time                 datetime comment '历元时间',"
+                 "ecef_x               double comment 'ECEF_X',"
+                 "ecef_y               double comment 'ECEF_Y',"
+                 "ecef_z               double comment 'ECEF_Z',"
+                 "q                    int comment '解的状态',"
+                 "ns                   int comment '卫星数',"
+                 "sdx                  float comment 'X方向标准差',"
+                 "sdy                  float comment 'Y方向标准差',"
+                 "sdz                  float comment 'Z方向标准差',"
+                 "e                    double comment '东方向相对位移',"
+                 "n                    double comment '北方向相对位移',"
+                 "u                    double comment '天顶方向相对位移',"
+                 "age                  float comment '差分年龄',"
+                 "ratio                float comment 'ratio',"
+                 "del_flag             char comment '删除标记',"
+                 "creat_time           datetime comment '创建时间',"
+                 "creat_by             varchar(64) comment '创建者',"
+                 "update_time          datetime comment '更新时间',"
+                 "update_by            varchar(64) comment '更新者',"
+                 "remarks              varchar(255) comment '备注',"
+                 "primary key (id)"
+              ");");
     //"(time DATETIME primary key,X_ECEF double,Y_ECEF double,Z_ECEF double,Q int,ns int,sd_x float,sd_y float,sd_z float,sd_xy float,sd_yz float,sd_zx float,age float,ratio float)"
 
     qDebug()<<creat;
@@ -710,11 +733,11 @@ int NaviMain::sql_out_ecef(sol_t *sol, char *tablename, int num)
 
 
 
-    float std[3]={sqrt(sol->qr[0]),sqrt(sol->qr[1]),(sol->qr[2])};
+    //float std[3]={sqrt(sol->qr[0]),sqrt(sol->qr[1]),(sol->qr[2])};
     //写入数据库的数据最好提前定义格式并处理好，而不是在写入的时候进行处理，避免格式错误（如float开方得到的结果可能导致结果变成double型？，与数据库类型不匹配导致数据无法正常写入）
 
 
-    sqlout.append(" (time,X_ECEF,Y_ECEF,Z_ECEF,Q,ns,sd_x,sd_y,sd_z,E,N,U,age,ratio) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    sqlout.append(" (time,ecef_x,ecef_y,ecef_z,q,ns,sdx,sdy,sdz,e,n,u,age,ratio) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
     //int time =sol->time.time;
 
@@ -725,14 +748,96 @@ int NaviMain::sql_out_ecef(sol_t *sol, char *tablename, int num)
     query.bindValue(3,sol->rr[2]);
     query.bindValue(4,sol->stat);
     query.bindValue(5,sol->ns);
-    query.bindValue(6,std[0]);
-    query.bindValue(7,std[1]);
-    query.bindValue(8,std[2]);
+    query.bindValue(6,sol->qr[0]);
+    query.bindValue(7,sol->qr[1]);
+    query.bindValue(8,sol->qr[2]);
     query.bindValue(9,roverenu[0]);
     query.bindValue(10,roverenu[1]);
     query.bindValue(11,roverenu[2]);
     query.bindValue(12,sol->age);
     query.bindValue(13,sol->ratio);
+
+
+    //qDebug()<<sqlout;
+
+    query.exec();
+
+    query.clear();
+
+    return 0;
+}
+
+int NaviMain::sql_out_pos(sol_t *sol, char *tablename, int num)
+{
+
+
+
+    double soltime[6]={0};
+    //gpst2utc(sol->time);
+    time2epoch(gpst2utc(sol->time),soltime);
+
+    char Time[128];
+    sprintf(Time,"%d-%02d-%02d %02d:%02d:%02d",int(soltime[0]),int(soltime[1]),int(soltime[2]),int(soltime[3]),int(soltime[4]),int(soltime[5]));
+
+
+    double roverenu[3]={0};
+    double rovervector[3]={sol->rr[0]-roverxyz[0],sol->rr[1]-roverxyz[1],sol->rr[2]-roverxyz[2]};
+
+    ecef2enu(roverllh,rovervector,roverenu);
+
+
+
+    float std[3]={sqrt(sol->qr[0]),sqrt(sol->qr[1]),(sol->qr[2])};
+    //写入数据库的数据最好提前定义格式并处理好，而不是在写入的时候进行处理，避免格式错误（如float开方得到的结果可能导致结果变成double型？，与数据库类型不匹配导致数据无法正常写入）
+
+
+
+    QString sqlout;
+    sqlout.asprintf("insert into %s (time,ecef_x,ecef_y,ecef_z,q,ns,sdx,sdy,sdz,e,n,u,age,ratio)"
+                    " values(%s,%lf,%lf,%lf,%d,%d,%f,%f,%f,%lf,%lf,%lf,%f,%f)",
+                    tablename,Time,sol->rr[0],sol->rr[1],sol->rr[2],sol->stat,sol->ns,std[0],std[1],std[2],roverenu[0],roverenu[1],roverenu[2],sol->age,sol->ratio);
+
+
+    sqlout=QString("insert into %1 (time,ecef_x,ecef_y,ecef_z,q,ns,sdx,sdy,sdz,e,n,u,age,ratio) values(?,%2,%3,%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14)")
+            .arg(tablename)
+            //.arg("2022-04-15 14:25:35")
+            .arg(sol->rr[0])
+            .arg(sol->rr[1])
+            .arg(sol->rr[2])
+            .arg(sol->stat)
+            .arg(sol->ns)
+            .arg(std[0])
+            .arg(std[1])
+            .arg(std[2])
+            .arg(roverenu[0])
+            .arg(roverenu[1])
+            .arg(roverenu[2])
+            .arg(sol->age)
+            .arg(sol->ratio);
+
+
+
+//    sqlout.append(" (time,ecef_x,ecef_y,ecef_z,q,ns,sdx,sdy,sdz,e,n,u,age,ratio) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+
+    //int time =sol->time.time;
+
+    qDebug()<<sqlout;
+
+    query.prepare(sqlout);
+    query.bindValue(0,Time);
+//    query.bindValue(1,sol->rr[0]);
+//    query.bindValue(2,sol->rr[1]);
+//    query.bindValue(3,sol->rr[2]);
+//    query.bindValue(4,sol->stat);
+//    query.bindValue(5,sol->ns);
+//    query.bindValue(6,std[0]);
+//    query.bindValue(7,std[1]);
+//    query.bindValue(8,std[2]);
+//    query.bindValue(9,roverenu[0]);
+//    query.bindValue(10,roverenu[1]);
+//    query.bindValue(11,roverenu[2]);
+//    query.bindValue(12,sol->age);
+//    query.bindValue(13,sol->ratio);
 
     query.exec();
 
@@ -942,6 +1047,14 @@ int NaviMain::sql_out_sky(rtk_t *rtk, char *tablename)
     query.clear();
 
     return 0;
+
+
+}
+
+int NaviMain::sql_out_snr(rtk_t *rtk, char *tablename)
+{
+    rtk->ssat->azel;
+
 
 
 }
