@@ -317,14 +317,43 @@ void NaviMain::outputsol()
     {
         outsol=svr->solbuf+i;
 
+
+
+        double soltime[6]={0};
+        //gpst2utc(sol->time);
+        time2epoch(gpst2utc(outsol->time),soltime);
+
+        char Time[128];
+        sprintf(Time,"%d-%02d-%02d %02d:%02d:%02d",int(soltime[0]),int(soltime[1]),int(soltime[2]),int(soltime[3]),int(soltime[4]),int(soltime[5]));
+
+
+
+
+
         //一个历元sol的输出
 
         //sol_to_debug(outsol,nsol);
 
-        sol_to_sql(outsol,postable);
+        //sol_to_sql(outsol,postable);
+
+        //sql_out_rr(sol,table_name,num);
+        sql_out_ecef(outsol,postable,Time);
+        //sql_out_pos(sol,table_name,num);
+
+        qDebug()<<num<<svr->nsol<<outsol->time.time<<"state"<<outsol->stat<<outsol->ns;
+
+        sql_out_sat(svr,sattable,Time);
+
+        num++;
+
+
     }
 
-    svr->nsol=0;//solbuff计数清零
+    svr->nsol=0;//solbuff计数清零  清零之后会影响程序本身的解算结果写出函数吗？
+
+//    sql_out_snr(rtksvr_t *svr,char* tablename);
+
+
 
 
 //    if(tosqlsec!=svr->rtk.sol.time.time)
@@ -574,15 +603,19 @@ int NaviMain::creatTable(char* netname,char* basename,char* rovername,char*table
 
 
     sprintf(postable,"bak_%s_%s_pos_1s_%s",basename,rovername,tableformat);
+    sprintf(sattable,"bak_%s_%s_sat_1s_%s",basename,rovername,tableformat);
 //    sprintf(skytable,"%s_%s_%s_sky_%s",netname,basename,rovername,tableformat);
 //    sprintf(obstable,"bak_%s_%s_obs_1s_%s",basename,rovername,tableformat);
     //sprintf(baseobstable,"%s_%s_OBS_%s",netname,basename,tableformat);
 //    sprintf(eventtable,"%s_eventRecord",netname);
 
 
+
     sql_creat_ecef(postable);
+    sql_creat_sat(sattable);
 //    sql_creat_sky(skytable);
 //    sql_creat_obs(obstable);
+
 
 }
 
@@ -596,17 +629,10 @@ int NaviMain::SQLconnect_close()
     return 0;
 }
 
-int NaviMain::sol_to_sql(sol_t *sol, char* table_name)
+int NaviMain::sol_to_sql(rtksvr_t *svr, char* table_name)
 {
 
-    //sql_out_rr(sol,table_name,num);
-    sql_out_ecef(sol,table_name,num);
-    //sql_out_pos(sol,table_name,num);
 
-    qDebug()<<num<<svr->nsol<<sol->time.time<<"state"<<sol->stat;
-
-
-    num++;
     return 0;
 }
 
@@ -686,6 +712,50 @@ int NaviMain::sql_creat_obs(char *tablename)
     return 0;
 }
 
+int NaviMain::sql_creat_sat(char *tablename)
+{
+    //如果表不存在，则创建。
+    QString creat="create table if not exists ";
+    creat.append(tablename);//表名
+
+    //定义主键、列名、列类型
+    creat.append("("
+                    "id                   bigint not null auto_increment comment 'ID',"
+                    "time                 datetime comment '时间',"
+                 "rover_num           int comment '测站可见卫星数',"
+                 "base_num             int comment '基站可见卫星数',"
+                 "rg_num               int comment '测站可见GPS卫星数量',"
+                 "rc_num               int comment '测站可见北斗卫星数量',"
+                 "rr_num               int comment '测站可见GLONASS数量',"
+                 "re_num               int comment '测站可见Galileo卫星数量',"
+                 "bg_num               int comment '基站可见GPS卫星数量',"
+                 "bc_num               int comment '基站可见北斗卫星数量',"
+                 "br_num               int comment '基站可见GLONASS数量',"
+                 "be_num               int comment '基站可见Galileo卫星数量',"
+                 "rg_sat               text comment '测站_GPS_info',"
+                 "rc_sat               text comment '测站_BDS_info',"
+                 "rr_sat               text comment '测站_GLONASS_info',"
+                 "re_sat               text comment '测站_Galileo_info',"
+                 "bg_sat               text comment '基站_GPS_info',"
+                 "bc_sat               text comment '基站_BDS_info',"
+                 "br_sat               text comment '基站_GLONASS_info',"
+                 "be_sat               text comment '基站_Galileo_info',"
+                 "creat_time           datetime comment '创建时间',"
+                 "creat_by             varchar(64) comment '创建者',"
+                 "update_time          datetime comment '更新时间',"
+                 "update_by            varchar(64) comment '更新者',"
+                 "remarks              varchar(255) comment '备注',"
+                 "primary key (id)"
+              ");");
+    //"(time DATETIME primary key,X_ECEF double,Y_ECEF double,Z_ECEF double,Q int,ns int,sd_x float,sd_y float,sd_z float,sd_xy float,sd_yz float,sd_zx float,age float,ratio float)"
+
+    qDebug()<<creat;
+
+    query.exec(creat);
+
+    return 0;
+}
+
 int NaviMain::sql_out_rr(sol_t *sol, char* tablename ,int num)
 {
     QString sqlout="insert into ";
@@ -711,19 +781,12 @@ int NaviMain::sql_out_rr(sol_t *sol, char* tablename ,int num)
     return 0;
 }
 
-int NaviMain::sql_out_ecef(sol_t *sol, char *tablename, int num)
+int NaviMain::sql_out_ecef(sol_t *sol, char *tablename,char* Time)
 {
 
     QString sqlout="insert into ";
     sqlout.append(tablename);
 
-
-    double soltime[6]={0};
-    //gpst2utc(sol->time);
-    time2epoch(gpst2utc(sol->time),soltime);
-
-    char Time[128];
-    sprintf(Time,"%d-%02d-%02d %02d:%02d:%02d",int(soltime[0]),int(soltime[1]),int(soltime[2]),int(soltime[3]),int(soltime[4]),int(soltime[5]));
 
 
     double roverenu[3]={0};
@@ -1051,13 +1114,134 @@ int NaviMain::sql_out_sky(rtk_t *rtk, char *tablename)
 
 }
 
-int NaviMain::sql_out_snr(rtk_t *rtk, char *tablename)
+int build_info(int prn,int vs,double* AzEl,double *SNR,char* text)
 {
-    rtk->ssat->azel;
+
+    char onedate[26];
+    //onedate[0]='1';
+    sprintf(onedate,"%02d_%d_%05.1lf_%04.1lf_%4.1lf_%4.1lf ",prn,vs,AzEl[0]*R2D,AzEl[1]*R2D,SNR[0],SNR[1]);
+
+    strcat(text,onedate);
+
 
 
 
 }
+
+
+
+
+int NaviMain::sql_out_sat(rtksvr_t *svr, char *tablename,char* Time)
+{
+
+
+    int satnum[2]={0,0};//基站和测站卫星数量计数
+    int sysnum[8]={0};
+
+
+
+
+    char text[8][2048]={"\0"};
+
+    //svr->rtk.ssat[i]与 svr.obs[i].data+i;
+
+
+    //读取 基站i=1 和 流动站i=2 的OBS数据
+    for(int i=0;i<2;i++)
+    {
+
+        for(int j=0;j<svr->obs[i]->n;j++)
+        {
+            satnum[i]=svr->obs[i]->n;
+
+            obsd_t* data=svr->obs[i]->data+j;
+            ssat_t* ssat=svr->rtk.ssat;
+
+            //if(ssat[data->sat-1].vs)//判断卫星是否可用
+            //{
+                //
+
+                int vs=0;
+
+                double SNR[2]={0.0};
+                double AzEl[2]={0.0};
+
+                int sys=0;
+                int prn=0;
+
+
+                vs=ssat[data->sat-1].vs;
+
+                AzEl[0]=ssat[data->sat-1].azel[0];
+                AzEl[1]=ssat[data->sat-1].azel[1];
+                SNR[0]=data->SNR[0]*0.001;
+                SNR[1]=data->SNR[1]*0.001;
+
+                sys=satsys(data->sat,&prn);
+
+                switch (sys) {
+                case SYS_GPS:sysnum[i*4+0]++;build_info(prn,vs,AzEl,SNR,text[i*4+0]);break;
+                case SYS_CMP:sysnum[i*4+1]++;build_info(prn,vs,AzEl,SNR,text[i*4+1]);break;
+                case SYS_GLO:sysnum[i*4+2]++;build_info(prn,vs,AzEl,SNR,text[i*4+2]);break;
+                case SYS_GAL:sysnum[i*4+3]++;build_info(prn,vs,AzEl,SNR,text[i*4+3]);break;
+                default: break;
+               // }
+            }
+        }
+    }
+
+
+    QString sqlout="insert into ";
+    sqlout.append(tablename);
+
+    sqlout.append(" (time,rover_num,base_num,rg_num,rc_num,rr_num,re_num,bg_num,bc_num,br_num,be_num,rg_sat,rc_sat,rr_sat,re_sat,bg_sat,bc_sat,br_sat,be_sat) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    //sqlout.append(" (time,rover_num,base_num,rg_num,rc_num,rr_num,re_num,bg_num,bc_num,br_num,be_num) values(?,?,?,?,?,?,?,?,?,?,?)");
+
+    //int time =sol->time.time;
+
+    query.prepare(sqlout);
+    query.bindValue(0,Time);
+    query.bindValue(1,satnum[0]);
+    query.bindValue(2,satnum[1]);
+    query.bindValue(3,sysnum[0]);
+    query.bindValue(4,sysnum[1]);
+    query.bindValue(5,sysnum[2]);
+    query.bindValue(6,sysnum[3]);
+    query.bindValue(7,sysnum[4]);
+    query.bindValue(8,sysnum[5]);
+    query.bindValue(9,sysnum[6]);
+    query.bindValue(10,sysnum[7]);
+    query.bindValue(11,text[0]);
+    query.bindValue(12,text[1]);
+    query.bindValue(13,text[2]);
+    query.bindValue(14,text[3]);
+    query.bindValue(15,text[4]);
+    query.bindValue(16,text[5]);
+    query.bindValue(17,text[6]);
+    query.bindValue(18,text[7]);
+
+    qDebug()<<Time<<satnum[0]<<satnum[1]<<sysnum[0]<<sysnum[1]<<sysnum[2]<<sysnum[3]<<sysnum[4]<<sysnum[5]<<sysnum[6]<<sysnum[7];
+    qDebug()<<text[0];
+            qDebug()<<text[1];
+            qDebug()<<text[2];
+            qDebug()<<text[3];
+            qDebug()<<text[4];
+            qDebug()<<text[5];
+            qDebug()<<text[6];
+            qDebug()<<text[7];
+
+    query.exec();
+
+    query.clear();
+
+    return 0;
+    //用OBS数据匹配卫星高度角与方位角，
+
+}
+
+
+
+
 // open monitor port --------------------------------------------------------
 //void  NaviMain::OpenMoniPort(int port)
 //{

@@ -10,7 +10,7 @@ CONFIG -= app_bundle
 
 include(../../RTKLib.pri)
 
-TARGET = rtk_server.v1.2.1
+TARGET = rtk_server.v1.2.2
 TEMPLATE = app
 
 INCLUDEPATH += ../../src

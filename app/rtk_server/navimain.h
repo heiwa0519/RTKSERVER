@@ -61,6 +61,7 @@ public:
     //char skytable[MAXCHAR];
     char obstable[MAXCHAR];
     char eventtable[MAXCHAR];
+    char sattable[MAXCHAR];
 
 
     int creatsqlsec=-1;//创建到数据库时的gtime秒数
@@ -131,9 +132,10 @@ public:
     int sql_creat_sky(char* tablename);
     int sql_creat_obs(char* tablename);
     int sql_creat_net(char* tablename);
+    int sql_creat_sat(char* tablename);
 
     void outputsol();//sol结果输出
-    int sol_to_sql(sol_t *sol, char* table_name);
+    int sol_to_sql(rtksvr_t *svr, char* table_name);
     void sol_to_debug(sol_t *sol,int nsol);//sol结果输出到debug
 
     //更新数据表的函数
@@ -144,11 +146,11 @@ public:
     //sol输出到表的具体函数
     //输出sol_t.rr到sql
     int sql_out_rr(sol_t *sol,char* tablename,int num);
-    int sql_out_ecef(sol_t *sol,char* tablename,int num);
+    int sql_out_ecef(sol_t *sol, char* tablename, char *Time);
     int sql_out_pos(sol_t *sol,char* tablename,int num);
     int sql_out_obs(obs_t *obs_R,obs_t *obs_B,char* tablename);
     int sql_out_sky(rtk_t *rtk,char* tablename);
-    int sql_out_snr(rtk_t *rtk,char* tablename);
+    int sql_out_sat(rtksvr_t *svr, char* tablename, char* Time);
 
 
 //————————————数据库相关函数——————————————————————————————————
