@@ -5,31 +5,27 @@
 一个变形监测系统后端软件，基于RTKlib开发，实现GNSS数据流接收、解算、并将解算结果以指定形式存放至数据库。
 整个监测系统由后端、数据库和前端组成。
 
-----------
-
 
 本程序利用Qt编写、调试和生成可执行程序，为满足课题实际需要，可在Windows和Linux下运行
 
 
-- 在Win利用 `Qt 6.2.1 MinGW 64-bit` 版本编译器
+- 在Windows下利用 `Qt 6.2.1 MinGW 64-bit` 版本编译器构建
 
 
-- 在linux下利用 `Qt 6.1.2 GCC 64-bit` 版本编译器
+- 在linux下利用 `Qt 6.1.2 GCC 64-bit` 版本编译器构建
 
 
 - 工程的构建参照了[emlid/RTKLIB](https://github.com/emlid/RTKLIB/tree/reach)的工程构建方法，并将rtklib核心代码部分替换为[RTKLIB 2.4.3 b34](https://github.com/tomojitakasu/RTKLIB/tree/rtklib_2.4.3) 版本
 
 
-----------
-
 
 based on RTKlib 2.4.3 b34 , use Qt 6.2.1 MinGW 64-bit in Windows and Qt 6.1.2 GCC 64bit in Linux.
+
 
 ----------
 
 # 已实现功能 #
 
-----------
 
 ##  1. RTKSERVER ##
 本项目的主要工作，逐步实现各个功能并完善，基于程序rtknavi和rtkrcv改写，主要实现接收GNSS实时流并实时解算，将结果和一些其他指定信息写入数据库，为监测系统前端展示提供数据支持。
