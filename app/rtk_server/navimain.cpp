@@ -198,7 +198,7 @@ void NaviMain::loadini()
 {
 
 #ifdef WIN32
-    loadopts("D:/RTKSERVER/conf/server/option.ini",iniopts);
+    loadopts("../conf/server/option.ini",iniopts);
 #else
     loadopts("option.ini",iniopts);
 #endif
@@ -1221,14 +1221,14 @@ int NaviMain::sql_out_sat(rtksvr_t *svr, char *tablename,char* Time)
     query.bindValue(18,text[7]);
 
     qDebug()<<Time<<satnum[0]<<satnum[1]<<sysnum[0]<<sysnum[1]<<sysnum[2]<<sysnum[3]<<sysnum[4]<<sysnum[5]<<sysnum[6]<<sysnum[7];
-    qDebug()<<text[0];
-            qDebug()<<text[1];
-            qDebug()<<text[2];
-            qDebug()<<text[3];
-            qDebug()<<text[4];
-            qDebug()<<text[5];
-            qDebug()<<text[6];
-            qDebug()<<text[7];
+    //qDebug()<<text[0];
+//            qDebug()<<text[1];
+//            qDebug()<<text[2];
+//            qDebug()<<text[3];
+//            qDebug()<<text[4];
+//            qDebug()<<text[5];
+//            qDebug()<<text[6];
+//            qDebug()<<text[7];
 
     query.exec();
 
